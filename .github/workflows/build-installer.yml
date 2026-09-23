@@ -44,8 +44,6 @@ jobs:
             '```' | Add-Content $env:GITHUB_STEP_SUMMARY
           }
           exit $code
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload build log
         if: always()

@@ -45,5 +45,9 @@
     "portable": {
       "artifactName": "FlappyBusik-Portable-${version}.${ext}"
     }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maximZZ9/sss76.git"
   }
 }
