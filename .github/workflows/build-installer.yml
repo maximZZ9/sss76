@@ -70,10 +70,9 @@ jobs:
           $files = @(Get-ChildItem dist -Filter *.exe | ForEach-Object { $_.FullName })
           $files += (Resolve-Path ./install-flappy-busik.bat).Path
           $notes = "Скачайте FlappyBusik-Setup-1.0.0.exe и запустите - это обычный установщик (ярлыки, удаление через Панель управления).`n`n- FlappyBusik-Portable-1.0.0.exe - portable-версия без установки.`n- install-flappy-busik.bat - лёгкий автономный установщик (1 файл, без Electron, игра открывается в браузере)."
+          # Если настройки репозитория запрещают GITHUB_TOKEN запись (Workflow permissions = read),
+          # публикация релиза недоступна — не роняем пайплайн, установщики остаются в артефактах.
           gh release create $tag $files --title "Flappy Бусик v1.0.0 — ТЦК Simulator" --notes $notes --repo $env:GITHUB_REPOSITORY 2>&1 | Out-String | ForEach-Object { Write-Output $_ }
           if ($LASTEXITCODE -ne 0) {
-            $out1 = (gh release create $tag $files --title "t" --notes "n" --repo $env:GITHUB_REPOSITORY 2>&1 | Out-String)
-            if ($out1.Length -gt 850) { $out1 = $out1.Substring($out1.Length - 850) }
-            Write-Output "::error::create: $($out1 -replace '%','%25' -replace "`r",'' -replace "`n",'%0A')"
-            exit 1
+            Write-Output "::warning::Не удалось создать GitHub Release (403). Включите Settings -> Actions -> General -> Workflow permissions -> Read and write, тогда установщики будут публиковаться как релизы. Сейчас они доступны в артефактах запуска."
           }
