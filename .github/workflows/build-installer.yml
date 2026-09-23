@@ -72,12 +72,8 @@ jobs:
           $notes = "Скачайте FlappyBusik-Setup-1.0.0.exe и запустите - это обычный установщик (ярлыки, удаление через Панель управления).`n`n- FlappyBusik-Portable-1.0.0.exe - portable-версия без установки.`n- install-flappy-busik.bat - лёгкий автономный установщик (1 файл, без Electron, игра открывается в браузере)."
           gh release create $tag $files --title "Flappy Бусик v1.0.0 — ТЦК Simulator" --notes $notes --repo $env:GITHUB_REPOSITORY 2>&1 | Out-String | ForEach-Object { Write-Output $_ }
           if ($LASTEXITCODE -ne 0) {
-            $perm = (gh api "repos/$env:GITHUB_REPOSITORY" --jq '.permissions' 2>&1 | Out-String).Trim()
-            Write-Output "::notice::token repo permissions: $($perm -replace '%','%25' -replace "`r",'' -replace "`n",'%0A')"
-            gh release upload $tag $files --clobber --repo $env:GITHUB_REPOSITORY 2>&1 | Out-String | ForEach-Object { Write-Output $_ }
-            if ($LASTEXITCODE -ne 0) {
-              $err = "gh release upload exit=$LASTEXITCODE"
-              Write-Output "::error::$err"
-              exit 1
-            }
+            $out1 = (gh release create $tag $files --title "t" --notes "n" --repo $env:GITHUB_REPOSITORY 2>&1 | Out-String)
+            if ($out1.Length -gt 850) { $out1 = $out1.Substring($out1.Length - 850) }
+            Write-Output "::error::create: $($out1 -replace '%','%25' -replace "`r",'' -replace "`n",'%0A')"
+            exit 1
           }
