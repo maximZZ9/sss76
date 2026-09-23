@@ -29,7 +29,14 @@ jobs:
         shell: pwsh
         run: |
           npm run dist 2>&1 | Tee-Object -FilePath build-log.txt
-          exit $LASTEXITCODE
+          $code = $LASTEXITCODE
+          if ($code -ne 0) {
+            "### Build failed - log tail" | Add-Content $env:GITHUB_STEP_SUMMARY
+            '```text' | Add-Content $env:GITHUB_STEP_SUMMARY
+            Get-Content ./build-log.txt -Tail 80 | Add-Content $env:GITHUB_STEP_SUMMARY
+            '```' | Add-Content $env:GITHUB_STEP_SUMMARY
+          }
+          exit $code
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
