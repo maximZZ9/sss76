@@ -67,8 +67,18 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $tag = "v1.0.0"
+          $files = @(Get-ChildItem dist -Filter *.exe | ForEach-Object { $_.FullName })
+          $files += (Resolve-Path ./install-flappy-busik.bat).Path
           $notes = "Скачайте FlappyBusik-Setup-1.0.0.exe и запустите - это обычный установщик (ярлыки, удаление через Панель управления).`n`n- FlappyBusik-Portable-1.0.0.exe - portable-версия без установки.`n- install-flappy-busik.bat - лёгкий автономный установщик (1 файл, без Electron, игра открывается в браузере)."
-          gh release create $tag dist/*.exe desktop/install-flappy-busik.bat --title "Flappy Бусик v1.0.0 — ТЦК Simulator" --notes $notes --repo $env:GITHUB_REPOSITORY 2>$null
+          gh release create $tag $files --title "Flappy Бусик v1.0.0 — ТЦК Simulator" --notes $notes --repo $env:GITHUB_REPOSITORY 2>&1 | Out-String | ForEach-Object { Write-Output $_ }
           if ($LASTEXITCODE -ne 0) {
-            gh release upload $tag dist/*.exe desktop/install-flappy-busik.bat --clobber --repo $env:GITHUB_REPOSITORY
+            $msg = "release create exit=$LASTEXITCODE, retrying upload"
+            gh release upload $tag $files --clobber --repo $env:GITHUB_REPOSITORY 2>&1 | Out-String | ForEach-Object { Write-Output $_ }
+            if ($LASTEXITCODE -ne 0) {
+              $msg = "release upload failed too, exit=$LASTEXITCODE"
+              $chunks = [Math]::Ceiling($msg.Length / 900)
+              Write-Output "::error::$($msg -replace '%','%25' -replace "`r",'' -replace "`n",'%0A')"
+              exit 1
+            }
+            Write-Output "::warning::$msg"
           }
