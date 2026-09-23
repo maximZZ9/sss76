@@ -76,3 +76,4 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             Write-Output "::warning::Не удалось создать GitHub Release (403). Включите Settings -> Actions -> General -> Workflow permissions -> Read and write, тогда установщики будут публиковаться как релизы. Сейчас они доступны в артефактах запуска."
           }
+          exit 0
