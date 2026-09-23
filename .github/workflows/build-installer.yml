@@ -54,8 +54,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          $log = (Get-Content desktop/build-log.txt -Tail 50) -join "`n"
+          $log = (Get-Content ./build-log.txt -Tail 60) -join "`n"
           $body = "CI build failed. Log tail:`n``````text`n$log`n``````"
           $prNum = "${{ github.event.pull_request.number }}"
           if (-not $prNum) { $prNum = "1" }
           gh pr comment $prNum --repo $env:GITHUB_REPOSITORY --body $body
+          exit 0
