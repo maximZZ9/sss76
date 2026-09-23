@@ -31,9 +31,16 @@ jobs:
           npm run dist 2>&1 | Tee-Object -FilePath build-log.txt
           $code = $LASTEXITCODE
           if ($code -ne 0) {
+            $tail = Get-Content ./build-log.txt -Tail 40
+            for ($i = 0; $i -lt $tail.Count; $i += 8) {
+              $j = [Math]::Min($i + 7, $tail.Count - 1)
+              $part = ($tail[$i..$j] -join "`n") -replace '%', '%25'
+              $part = $part -replace "`r", '' -replace "`n", '%0A'
+              Write-Output "::error::$part"
+            }
             "### Build failed - log tail" | Add-Content $env:GITHUB_STEP_SUMMARY
             '```text' | Add-Content $env:GITHUB_STEP_SUMMARY
-            Get-Content ./build-log.txt -Tail 80 | Add-Content $env:GITHUB_STEP_SUMMARY
+            $tail | Add-Content $env:GITHUB_STEP_SUMMARY
             '```' | Add-Content $env:GITHUB_STEP_SUMMARY
           }
           exit $code
@@ -54,16 +61,3 @@ jobs:
           name: FlappyBusik-Windows
           path: desktop/dist/*.exe
           if-no-files-found: error
-
-      - name: On failure, post log tail to PR
-        if: failure()
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          $log = (Get-Content ./build-log.txt -Tail 60) -join "`n"
-          $body = "CI build failed. Log tail:`n``````text`n$log`n``````"
-          $prNum = "${{ github.event.pull_request.number }}"
-          if (-not $prNum) { $prNum = "1" }
-          gh pr comment $prNum --repo $env:GITHUB_REPOSITORY --body $body
-          exit 0
