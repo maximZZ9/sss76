@@ -26,9 +26,20 @@ jobs:
         run: npm ci
 
       - name: Build installer (NSIS + portable)
-        run: npm run dist
+        shell: pwsh
+        run: |
+          npm run dist 2>&1 | Tee-Object -FilePath build-log.txt
+          exit $LASTEXITCODE
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: desktop/build-log.txt
+          if-no-files-found: ignore
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -36,3 +47,15 @@ jobs:
           name: FlappyBusik-Windows
           path: desktop/dist/*.exe
           if-no-files-found: error
+
+      - name: On failure, post log tail to PR
+        if: failure()
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $log = (Get-Content desktop/build-log.txt -Tail 50) -join "`n"
+          $body = "CI build failed. Log tail:`n``````text`n$log`n``````"
+          $prNum = "${{ github.event.pull_request.number }}"
+          if (-not $prNum) { $prNum = "1" }
+          gh pr comment $prNum --repo $env:GITHUB_REPOSITORY --body $body
