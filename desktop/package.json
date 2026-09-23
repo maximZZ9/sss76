@@ -1,0 +1,49 @@
+{
+  "name": "flappy-busik",
+  "productName": "Flappy Busik",
+  "version": "1.0.0",
+  "description": "Flappy Bird с бусиком ТЦК — уворачивайся от столбов и собирай повистки",
+  "main": "main.js",
+  "author": "sss76",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win",
+    "dist:nsis": "electron-builder --win nsis",
+    "dist:portable": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "ru.sss76.flappybusik",
+    "productName": "Flappy Busik",
+    "directories": {
+      "output": "dist",
+      "buildResources": "buildres"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "game/**/*",
+      "buildres/icon.ico"
+    ],
+    "win": {
+      "icon": "buildres/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Flappy Busik",
+      "uninstallDisplayName": "Flappy Busik — ТЦК Simulator",
+      "artifactName": "FlappyBusik-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "FlappyBusik-Portable-${version}.${ext}"
+    }
+  }
+}
